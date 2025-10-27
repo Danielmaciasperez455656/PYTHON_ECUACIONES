@@ -2,6 +2,12 @@ import math
 import sys
 
 # ----------------------------------------------------------------
+### PUNTO CLAVE 1: FUNCIONES DE CÁLCULO "PURAS" (EL CEREBRO) ###
+# Estas funciones son el "cerebro" matemático.
+# No piden datos ni imprimen nada, solo reciben números y devuelven un resultado.
+# Esto hace que el código sea limpio y fácil de mantener.
+# ----------------------------------------------------------------
+
 # CÁLCULOS DE LEY DE DESCOMPOSICIÓN RADIACTIVA
 # Fórmulas: N(t) = N0 * e^(-kt)
 #           k = ln(2) / T_half
@@ -17,6 +23,9 @@ def calcular_cantidad_inicial(Nf, k, t):
 
 def calcular_tiempo_radiactivo(N0, Nf, k):
     """Calcula el Tiempo (t)."""
+    ### PUNTO CLAVE 3: MANEJO AVANZADO DE ERRORES (Parte A - 'raise') ###
+    # En lugar de solo imprimir un error, "lanzamos" (raise) una excepción formal.
+    # Esta excepción será "atrapada" (except) por el menú más abajo.
     if k == 0: raise ZeroDivisionError("La constante 'k' no puede ser cero.")
     if N0 == 0: raise ZeroDivisionError("La cantidad inicial 'N0' no puede ser cero.")
     ratio = Nf / N0
@@ -30,6 +39,11 @@ def calcular_constante_k_radiactiva(N0, Nf, t):
     ratio = Nf / N0
     if ratio <= 0: raise ValueError("La cantidad final debe ser positiva para el logaritmo.")
     return (-1 / t) * math.log(ratio)
+
+### PUNTO CLAVE ESPECIAL: FUNCIONES DE VIDA MEDIA ###
+# Estas dos funciones son cruciales para conectar 'k' con la Vida Media.
+# Permiten resolver problemas (como el del árbol) donde no te dan 'k'
+# pero sí te dan la Vida Media.
 
 def calcular_vida_media(k):
     """Calcula la Vida Media (T_half)."""
@@ -90,16 +104,27 @@ def calcular_constante_k_newton(Ta, T0, Tf, t):
 # ENTRADAS DE USUARIO Y MENÚS DE CONTROL
 # ----------------------------------------------------------------
 
+### PUNTO CLAVE 4: FUNCIÓN DE ENTRADA SEGURA ("safe_input") ###
+# Esta es una función "ayudante" (helper) que nos ahorra mucho código.
+# Su único trabajo es forzar al usuario a escribir un número válido.
+
 def safe_input(prompt, type=float):
     """Maneja la entrada de datos, forzando números y reintentando en caso de error."""
     while True:
         try:
+            # Intenta convertir la entrada del usuario al tipo (float por defecto)
             return type(input(prompt))
         except ValueError:
+            # Si falla (ej. el usuario escribe "hola"), muestra un error
+            # y el bucle 'while True' vuelve a empezar, pidiendo el dato de nuevo
             print("❌ Error de entrada. Por favor, introduce solo números válidos.")
 
+### PUNTO CLAVE 2: EL MENÚ "CONTROLADOR" DE RADIACTIVIDAD ###
+# Esta función maneja toda la interacción con el usuario para este módulo.
+# Llama a las funciones de cálculo (PUNTO 1) y maneja los errores (PUNTO 3).
 def menu_radiactiva():
     """Menú para el modelo de Decaimiento Radiactivo."""
+    # El bucle mantiene al usuario en este menú hasta que elija '7' para salir.
     while True:
         print("\n--- Modelos: Decaimiento Radiactivo ---")
         print("¿Qué variable deseas calcular?")
@@ -113,13 +138,18 @@ def menu_radiactiva():
         
         choice = safe_input("Selecciona una opción (1-7): ", type=str)
         print("-" * 50)
+        ### PUNTO CLAVE 3: MANEJO AVANZADO DE ERRORES (Parte B - 'try/except') ###
+        # "Intentamos" (try) hacer toda la operación (pedir datos y calcular).
         
         try:
             if choice == '1':
+                # 1. Recolecta datos usando la entrada segura
                 N0 = safe_input("Introduce la cantidad inicial (N0): ")
                 k = safe_input("Introduce la constante de desintegración (k): ")
                 t = safe_input("Introduce el tiempo transcurrido (t): ")
+                # 2. Llama a la función de cálculo "pura"
                 Nf = calcular_cantidad_final(N0, k, t)
+                # 3. Imprime el resultado
                 print(f"\n✅ Resultado: La cantidad final N(t) es: {Nf:.4f}")
             elif choice == '2':
                 Nf = safe_input("Introduce la cantidad final (N(t)): ")
@@ -140,18 +170,22 @@ def menu_radiactiva():
                 k = calcular_constante_k_radiactiva(N0, Nf, t)
                 print(f"\n✅ Resultado: La constante de desintegración (k) es: {k:.6f}")
             elif choice == '5':
+                # (Llamada a la función de Vida Media)
                 k = safe_input("Introduce la constante de desintegración (k): ")
                 t_half = calcular_vida_media(k)
                 print(f"\n✅ Resultado: La Vida Media (T_half) es: {t_half:.6f}")
             elif choice == '6':
+                # (Llamada a la función de Vida Media - usada para el Carbono-14)
                 t_half = safe_input("Introduce la Vida Media (T_half): ")
                 k = calcular_k_desde_vida_media(t_half)
                 print(f"\n✅ Resultado: La constante de desintegración (k) es: {k:.6f}")
             elif choice == '7':
-                break
+                break # Rompe el bucle 'while True' y vuelve al menú principal
             else:
                 print("Opción no válida. Por favor, elige una opción del 1 al 7.")
-        
+        # Si el bloque 'try' falla (porque una función de cálculo 'raise' un error),
+        # este bloque 'except' lo "atrapa" y maneja elegantemente.
+        # El programa no se cierra, solo muestra el error y vuelve al menú.
         except (ValueError, ZeroDivisionError) as e:
             print(f"❌ Error en el cálculo: {e}")
             
@@ -235,14 +269,17 @@ def main():
         print("-" * 50)
         
         if choice == '1':
+            # Llama al menú de radiactividad
             menu_radiactiva()
         elif choice == '2':
+            # Llama al menú de enfriamiento
             menu_newton()
         elif choice == '3':
             print("Programa finalizado. ¡Adiós!")
-            sys.exit(0)
+            sys.exit(0)# Cierra el programa de forma limpia
         else:
             print("Opción no válida. Por favor, elige 1, 2 o 3.")
-
+# Esta línea estándar de Python asegura que la función main()
+# solo se ejecute cuando corres el archivo directamente.
 if __name__ == "__main__":
     main()

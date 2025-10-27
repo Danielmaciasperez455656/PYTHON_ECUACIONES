@@ -137,7 +137,7 @@ def plot_model(t_max: float, values: List[float], xlabel: str, ylabel: str, titl
     # Configuración de Matplotlib para el tema oscuro
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(10, 5.5), facecolor=COLOR_FONDO) 
-    ax.plot(tiempo, fig_values, color=line_color, linewidth=3.5, label="Función $N(t)$ o $T(t)$")
+    ax.plot(tiempo, fig_values, color=line_color, linewidth=3.5, label="Función N(t) o T(t)")
     
     final_val_at_t = fig_values[np.abs(tiempo - t_max).argmin()] 
     ax.scatter(t_max, final_val_at_t, color=point_color, zorder=5, s=180, edgecolors='#C9D1D9', linewidths=2.5, label=f"Predicción en $t={t_max}$")
@@ -182,16 +182,16 @@ st.markdown("---")
 # ----------------------------------------------------------------
 if menu == "Descomposición Radiactiva":
     st.header("Modelo de Descomposición Radiactiva")
-    st.markdown("Calcula la cantidad restante ($N(t)$) de una sustancia con desintegración exponencial. **Fórmula:** $N(t) = N_0 e^{-k t}$")
+    st.markdown("Calcula la cantidad restante (N(t)) de una sustancia con desintegración exponencial. **Fórmula:** $N(t) = N_0 e^{-k t}$")
 
     with st.container(border=True): 
         st.subheader("Parámetros del Modelo")
         col1, col2, col3 = st.columns(3)
-        N0 = col1.number_input("Cantidad Inicial ($N_0$):", min_value=0.0, value=800.0, key="N0_manual", help="Masa o unidades al inicio (t=0).")
-        k = col2.number_input("Constante de Descomposición ($k$):", min_value=0.0001, value=0.015, format="%.4f", key="k_manual", help="Tasa de desintegración (k > 0).")
-        t = col3.number_input("Tiempo de Predicción ($t$):", min_value=0.0, value=50.0, key="t_manual", help="Tiempo transcurrido hasta el punto de cálculo.")
-        
-        st.markdown("---") 
+        N0 = col1.number_input("Cantidad Inicial (N_0):", min_value=0.0, value=800.0, key="N0_manual", help="Masa o unidades al inicio (t=0).")
+        k = col2.number_input("Constante de Descomposición (k):", min_value=0.0001, value=0.015, format="%.4f", key="k_manual", help="Tasa de desintegración (k > 0).")
+        t = col3.number_input("Tiempo de Predicción (t):", min_value=0.0, value=50.0, key="t_manual", help="Tiempo transcurrido hasta el punto de cálculo.")
+
+        st.markdown("---")
         submitted = st.button("Calcular Descomposición", key="btn_decay")
 
     if submitted:
@@ -203,9 +203,9 @@ if menu == "Descomposición Radiactiva":
             exp_val = -k * t
             decay_factor = math.exp(exp_val)
             Nf = N0 * decay_factor
-            
-            st.markdown(f'<div class="result-card"><h4>Cantidad Remanente $N({t:.2f})$</h4><div class="result-value">{Nf:.4f} unidades</div></div>', unsafe_allow_html=True)
-            
+
+            st.markdown(f'<div class="result-card"><h4>Cantidad Remanente N({t:.2f})</h4><div class="result-value">{Nf:.4f} unidades</div></div>', unsafe_allow_html=True)
+
             st.markdown("### Proceso de Cálculo Detallado")
             st.markdown("#### 1️⃣ Paso 1: Exponente")
             st.latex(f"(-k \\cdot t) = (-({k:.4f}) \\cdot {t:.2f}) = {exp_val:.4f}") # CORRECCIÓN: Usar la variable 'k'
@@ -227,17 +227,17 @@ if menu == "Descomposición Radiactiva":
 # ----------------------------------------------------------------
 elif menu == "Ley de Enfriamiento de Newton":
     st.header("Modelo: Ley de Enfriamiento de Newton")
-    st.markdown("Predice la temperatura ($T(t)$) de un objeto que se enfría en un ambiente constante. **Fórmula:** $T(t) = T_a + (T_0 - T_a)e^{-k t}$")
+    st.markdown("Predice la temperatura (T(t)) de un objeto que se enfría en un ambiente constante. **Fórmula:** T(t) = T_a + (T_0 - T_a)e^{-k t}")
 
     with st.container(border=True): 
         st.subheader("Parámetros del Modelo")
         col1, col2, col3, col4 = st.columns(4)
-        Ta = col1.number_input("Temp. Ambiente ($T_a$):", value=25.0, key="Ta_manual", help="Temperatura constante del entorno (°C).")
-        T0 = col2.number_input("Temp. Inicial ($T_0$):", value=100.0, key="T0_manual", help="Temperatura del objeto al inicio (t=0).")
-        k = col3.number_input("Constante de Enfriamiento ($k$):", min_value=0.0001, value=0.1, format="%.4f", key="k_enf_manual", help="Tasa de intercambio térmico (k > 0).")
-        t = col4.number_input("Tiempo de Predicción ($t$):", min_value=0.0, value=10.0, key="t_enf_manual", help="Tiempo transcurrido (en la unidad de k).")
-        
-        st.markdown("---") 
+        Ta = col1.number_input("Temp. Ambiente (T_a):", value=25.0, key="Ta_manual", help="Temperatura constante del entorno (°C).")
+        T0 = col2.number_input("Temp. Inicial (T_0):", value=100.0, key="T0_manual", help="Temperatura del objeto al inicio (t=0).")
+        k = col3.number_input("Constante de Enfriamiento (k):", min_value=0.0001, value=0.1, format="%.4f", key="k_enf_manual", help="Tasa de intercambio térmico (k > 0).")
+        t = col4.number_input("Tiempo de Predicción (t):", min_value=0.0, value=10.0, key="t_enf_manual", help="Tiempo transcurrido (en la unidad de k).")
+
+        st.markdown("---")
         submitted = st.button("Calcular Enfriamiento", key="btn_cool")
 
     if submitted:
@@ -250,9 +250,9 @@ elif menu == "Ley de Enfriamiento de Newton":
             exp_val = -k * t
             decay_factor = math.exp(exp_val)
             Tf = Ta + Tdiff * decay_factor
-            
-            st.markdown(f'<div class="result-card"><h4>Temperatura Final $T({t:.2f})$</h4><div class="result-value">{Tf:.2f} °C</div></div>', unsafe_allow_html=True)
-            
+
+            st.markdown(f'<div class="result-card"><h4>Temperatura Final T({t:.2f})</h4><div class="result-value">{Tf:.2f} °C</div></div>', unsafe_allow_html=True)
+
             st.markdown("### Proceso de Cálculo Detallado")
             st.markdown("#### 1️⃣ Paso 1: Diferencia Inicial")
             st.latex(f"\\Delta T_0 = T_0 - T_a = {T0:.2f} - {Ta:.2f} = {Tdiff:.2f} \\; \\text{{°C}}") 
