@@ -1,201 +1,248 @@
 import math
+import sys
 
-# --- Fórmulas de Descomposición Radiactiva ---
-# N(t) = N0 * e^(-kt)
-#
-# Relación con Vida Media (T_half):
-# k = ln(2) / T_half
-# T_half = ln(2) / k
-#
-# Donde:
-# N(t) = Cantidad final
-# N0   = Cantidad inicial
-# k    = Constante de desintegración
-# t    = Tiempo
-# T_half = Vida Media (Tiempo para que se desintegre la mitad)
+# ----------------------------------------------------------------
+# CÁLCULOS DE LEY DE DESCOMPOSICIÓN RADIACTIVA
+# Fórmulas: N(t) = N0 * e^(-kt)
+#           k = ln(2) / T_half
+# ----------------------------------------------------------------
 
-def calcular_cantidad_final():
-    """Pide los datos para hallar la Cantidad Final N(t)."""
-    print("\n--- Hallar Cantidad Final N(t) ---")
-    print("Fórmula: N(t) = N0 * e^(-kt)")
-    try:
-        # Pide los datos necesarios
-        N0 = float(input("Introduce la cantidad inicial (N0): "))
-        k = float(input("Introduce la constante de desintegración (k): "))
-        t = float(input("Introduce el tiempo transcurrido (t): "))
-        
-        # Calcula N(t)
-        Nf = N0 * math.exp(-k * t)
-        
-        print(f"\nResultado: La cantidad final N(t) es: {Nf:.4f}")
-        
-    except ValueError:
-        print("Error: Asegúrate de introducir solo números válidos.")
-    except Exception as e:
-        print(f"Ocurrió un error inesperado: {e}")
+def calcular_cantidad_final(N0, k, t):
+    """Calcula la Cantidad Final N(t)."""
+    return N0 * math.exp(-k * t)
 
-def calcular_cantidad_inicial():
-    """Pide los datos para hallar la Cantidad Inicial (N0)."""
-    print("\n--- Hallar Cantidad Inicial (N0) ---")
-    print("Fórmula: N0 = N(t) * e^(kt)")
-    try:
-        # Pide los datos necesarios
-        Nf = float(input("Introduce la cantidad final (N(t)): "))
-        k = float(input("Introduce la constante de desintegración (k): "))
-        t = float(input("Introduce el tiempo transcurrido (t): "))
-        
-        # Calcula N0
-        N0 = Nf * math.exp(k * t)
-        
-        print(f"\nResultado: La cantidad inicial (N0) es: {N0:.4f}")
+def calcular_cantidad_inicial(Nf, k, t):
+    """Calcula la Cantidad Inicial N0."""
+    return Nf * math.exp(k * t)
 
-    except ValueError:
-        print("Error: Asegúrate de introducir solo números válidos.")
-    except Exception as e:
-        print(f"Ocurrió un error inesperado: {e}")
+def calcular_tiempo_radiactivo(N0, Nf, k):
+    """Calcula el Tiempo (t)."""
+    if k == 0: raise ZeroDivisionError("La constante 'k' no puede ser cero.")
+    if N0 == 0: raise ZeroDivisionError("La cantidad inicial 'N0' no puede ser cero.")
+    ratio = Nf / N0
+    if ratio <= 0: raise ValueError("La cantidad final debe ser positiva para el logaritmo.")
+    return (-1 / k) * math.log(ratio)
 
-def calcular_tiempo():
-    """Pide los datos para hallar el Tiempo (t)."""
-    print("\n--- Hallar el Tiempo (t) ---")
-    print("Fórmula: t = (-1/k) * ln(N(t) / N0)")
-    try:
-        # Pide los datos necesarios
-        N0 = float(input("Introduce la cantidad inicial (N0): "))
-        Nf = float(input("Introduce la cantidad final (N(t)): "))
-        k = float(input("Introduce la constante de desintegración (k): "))
-        
-        # Validaciones
-        if k == 0:
-            print("Error: La constante 'k' no puede ser cero.")
-            return
-        if N0 == 0:
-             print("Error: La cantidad inicial 'N0' no puede ser cero.")
-             return
-            
-        # Comprobación para el logaritmo
-        ratio = Nf / N0
-        if ratio <= 0:
-            print("Error: La cantidad final debe ser un número positivo.")
-            print("Esto causa un logaritmo de un número no positivo.")
-        else:
-            # Calcula t
-            t = (-1 / k) * math.log(ratio)
-            print(f"\nResultado: El tiempo (t) transcurrido es: {t:.4f}")
-            
-    except ValueError:
-        print("Error: Asegúrate de introducir solo números válidos.")
-    except Exception as e:
-        print(f"Ocurrió un error inesperado: {e}")
+def calcular_constante_k_radiactiva(N0, Nf, t):
+    """Calcula la Constante (k) a partir de N0, N(t) y t."""
+    if t == 0: raise ZeroDivisionError("El tiempo 't' no puede ser cero.")
+    if N0 == 0: raise ZeroDivisionError("La cantidad inicial 'N0' no puede ser cero.")
+    ratio = Nf / N0
+    if ratio <= 0: raise ValueError("La cantidad final debe ser positiva para el logaritmo.")
+    return (-1 / t) * math.log(ratio)
 
-def calcular_constante_k():
-    """Pide los datos para hallar la Constante (k) a partir de N0, N(t) y t."""
-    print("\n--- Hallar la Constante de Desintegración (k) ---")
-    print("Fórmula: k = (-1/t) * ln(N(t) / N0)")
-    try:
-        # Pide los datos necesarios
-        N0 = float(input("Introduce la cantidad inicial (N0): "))
-        Nf = float(input("Introduce la cantidad final (N(t)): "))
-        t = float(input("Introduce el tiempo transcurrido (t): "))
-        
-        # Validaciones
-        if t == 0:
-            print("Error: El tiempo 't' no puede ser cero.")
-            return
-        if N0 == 0:
-             print("Error: La cantidad inicial 'N0' no puede ser cero.")
-             return
+def calcular_vida_media(k):
+    """Calcula la Vida Media (T_half)."""
+    if k <= 0: raise ZeroDivisionError("La constante 'k' debe ser positiva.")
+    return math.log(2) / k
 
-        # Comprobación para el logaritmo
-        ratio = Nf / N0
-        if ratio <= 0:
-            print("Error: La cantidad final debe ser un número positivo.")
-            print("Esto causa un logaritmo de un número no positivo.")
-        else:
-            # Calcula k
-            k = (-1 / t) * math.log(ratio)
-            print(f"\nResultado: La constante de desintegración (k) es: {k:.6f}")
-
-    except ValueError:
-        print("Error: Asegúrate de introducir solo números válidos.")
-    except Exception as e:
-        print(f"Ocurrió un error inesperado: {e}")
-
-def calcular_vida_media():
-    """Calcula la Vida Media (T_half) a partir de k."""
-    print("\n--- Hallar la Vida Media / Semivida (T_half) ---")
-    print("Fórmula: T_half = ln(2) / k")
-    try:
-        k = float(input("Introduce la constante de desintegración (k): "))
-        
-        if k <= 0:
-            print("Error: La constante 'k' debe ser un número positivo.")
-            return
-            
-        # Calcula T_half (ln(2) es math.log(2))
-        t_half = math.log(2) / k
-        print(f"\nResultado: La Vida Media (T_half) es: {t_half:.6f}")
-        
-    except ValueError:
-        print("Error: Asegúrate de introducir solo números válidos.")
-    except Exception as e:
-        print(f"Ocurrió un error inesperado: {e}")
-
-def convertir_vida_media_a_k():
+def calcular_k_desde_vida_media(t_half):
     """Calcula la constante k a partir de la Vida Media (T_half)."""
-    print("\n--- Hallar Constante (k) a partir de la Vida Media ---")
-    print("Fórmula: k = ln(2) / T_half")
-    try:
-        t_half = float(input("Introduce la Vida Media (T_half): "))
+    if t_half <= 0: raise ZeroDivisionError("La Vida Media (T_half) debe ser positiva.")
+    return math.log(2) / t_half
+
+# ----------------------------------------------------------------
+# CÁLCULOS DE LEY DE ENFRIAMIENTO DE NEWTON
+# Fórmulas: T(t) = Ta + (T0 - Ta) * e^(-kt)
+# ----------------------------------------------------------------
+
+def calcular_temperatura_final(Ta, T0, k, t):
+    """Calcula la Temperatura Final T(t)."""
+    return Ta + (T0 - Ta) * math.exp(-k * t)
+
+def calcular_temperatura_inicial(Ta, Tf, k, t):
+    """Calcula la Temperatura Inicial T0."""
+    # Despeje: T0 = Ta + (Tf - Ta) * e^(kt)
+    return Ta + (Tf - Ta) * math.exp(k * t)
+
+def calcular_temperatura_ambiente(Tf, T0, k, t):
+    """Calcula la Temperatura Ambiente Ta. (Fórmula Despejada)"""
+    # Despeje: Ta = (Tf - T0 * e^(-kt)) / (1 - e^(-kt))
+    exp_factor = math.exp(-k * t)
+    denominator = 1 - exp_factor
+    if denominator == 0: 
+        raise ZeroDivisionError("El tiempo 't' es demasiado grande, haciendo el denominador cero.")
+    return (Tf - T0 * exp_factor) / denominator
+
+def calcular_tiempo_newton(Ta, T0, Tf, k):
+    """Calcula el Tiempo (t)."""
+    if k == 0: raise ZeroDivisionError("La constante 'k' no puede ser cero.")
+    Tdiff_initial = T0 - Ta
+    if Tdiff_initial == 0: raise ZeroDivisionError("La temperatura inicial no puede ser igual a la ambiente.")
+    
+    ratio = (Tf - Ta) / Tdiff_initial
+    if ratio <= 0: raise ValueError("La temperatura final debe estar entre la inicial y la ambiente.")
+    
+    return (-1 / k) * math.log(ratio)
+
+def calcular_constante_k_newton(Ta, T0, Tf, t):
+    """Calcula la Constante de Enfriamiento (k)."""
+    if t == 0: raise ZeroDivisionError("El tiempo 't' no puede ser cero.")
+    Tdiff_initial = T0 - Ta
+    if Tdiff_initial == 0: raise ZeroDivisionError("La temperatura inicial no puede ser igual a la ambiente.")
+    
+    ratio = (Tf - Ta) / Tdiff_initial
+    if ratio <= 0: raise ValueError("La temperatura final debe estar entre la inicial y la ambiente.")
+    
+    return (-1 / t) * math.log(ratio)
+
+# ----------------------------------------------------------------
+# ENTRADAS DE USUARIO Y MENÚS DE CONTROL
+# ----------------------------------------------------------------
+
+def safe_input(prompt, type=float):
+    """Maneja la entrada de datos, forzando números y reintentando en caso de error."""
+    while True:
+        try:
+            return type(input(prompt))
+        except ValueError:
+            print("❌ Error de entrada. Por favor, introduce solo números válidos.")
+
+def menu_radiactiva():
+    """Menú para el modelo de Decaimiento Radiactivo."""
+    while True:
+        print("\n--- Modelos: Decaimiento Radiactivo ---")
+        print("¿Qué variable deseas calcular?")
+        print(" 1. Cantidad Final (N(t))")
+        print(" 2. Cantidad Inicial (N0)")
+        print(" 3. Tiempo Transcurrido (t)")
+        print(" 4. Constante de Desintegración (k)")
+        print(" 5. Vida Media / Semivida (T_half)")
+        print(" 6. Constante (k) a partir de la Vida Media")
+        print(" 7. Volver al Menú Principal")
         
-        if t_half <= 0:
-            print("Error: La Vida Media (T_half) debe ser un número positivo.")
-            return
+        choice = safe_input("Selecciona una opción (1-7): ", type=str)
+        print("-" * 50)
+        
+        try:
+            if choice == '1':
+                N0 = safe_input("Introduce la cantidad inicial (N0): ")
+                k = safe_input("Introduce la constante de desintegración (k): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                Nf = calcular_cantidad_final(N0, k, t)
+                print(f"\n✅ Resultado: La cantidad final N(t) es: {Nf:.4f}")
+            elif choice == '2':
+                Nf = safe_input("Introduce la cantidad final (N(t)): ")
+                k = safe_input("Introduce la constante de desintegración (k): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                N0 = calcular_cantidad_inicial(Nf, k, t)
+                print(f"\n✅ Resultado: La cantidad inicial N0 es: {N0:.4f}")
+            elif choice == '3':
+                N0 = safe_input("Introduce la cantidad inicial (N0): ")
+                Nf = safe_input("Introduce la cantidad final (N(t)): ")
+                k = safe_input("Introduce la constante de desintegración (k): ")
+                t = calcular_tiempo_radiactivo(N0, Nf, k)
+                print(f"\n✅ Resultado: El tiempo (t) transcurrido es: {t:.4f}")
+            elif choice == '4':
+                N0 = safe_input("Introduce la cantidad inicial (N0): ")
+                Nf = safe_input("Introduce la cantidad final (N(t)): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                k = calcular_constante_k_radiactiva(N0, Nf, t)
+                print(f"\n✅ Resultado: La constante de desintegración (k) es: {k:.6f}")
+            elif choice == '5':
+                k = safe_input("Introduce la constante de desintegración (k): ")
+                t_half = calcular_vida_media(k)
+                print(f"\n✅ Resultado: La Vida Media (T_half) es: {t_half:.6f}")
+            elif choice == '6':
+                t_half = safe_input("Introduce la Vida Media (T_half): ")
+                k = calcular_k_desde_vida_media(t_half)
+                print(f"\n✅ Resultado: La constante de desintegración (k) es: {k:.6f}")
+            elif choice == '7':
+                break
+            else:
+                print("Opción no válida. Por favor, elige una opción del 1 al 7.")
+        
+        except (ValueError, ZeroDivisionError) as e:
+            print(f"❌ Error en el cálculo: {e}")
             
-        # Calcula k
-        k = math.log(2) / t_half
-        print(f"\nResultado: La constante de desintegración (k) es: {k:.6f}")
+        print("-" * 50)
+
+
+def menu_newton():
+    """Menú para el modelo de Ley de Enfriamiento de Newton."""
+    while True:
+        print("\n--- Modelos: Ley de Enfriamiento de Newton ---")
+        print("¿Qué variable deseas calcular?")
+        print(" 1. Temperatura Final (T(t))")
+        print(" 2. Temperatura Inicial (T0)")
+        print(" 3. Temperatura Ambiente (Ta)") # Nuevo despeje
+        print(" 4. Tiempo Transcurrido (t)")
+        print(" 5. Constante de Enfriamiento (k)")
+        print(" 6. Volver al Menú Principal")
         
-    except ValueError:
-        print("Error: Asegúrate de introducir solo números válidos.")
-    except Exception as e:
-        print(f"Ocurrió un error inesperado: {e}")
+        choice = safe_input("Selecciona una opción (1-6): ", type=str)
+        print("-" * 50)
+
+        try:
+            if choice == '1':
+                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
+                T0 = safe_input("Introduce la temperatura inicial (T0): ")
+                k = safe_input("Introduce la constante de enfriamiento (k): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                Tf = calcular_temperatura_final(Ta, T0, k, t)
+                print(f"\n✅ Resultado: La temperatura final T(t) es: {Tf:.4f} °C")
+            elif choice == '2':
+                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
+                Tf = safe_input("Introduce la temperatura final (T(t)): ")
+                k = safe_input("Introduce la constante de enfriamiento (k): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                T0 = calcular_temperatura_inicial(Ta, Tf, k, t)
+                print(f"\n✅ Resultado: La temperatura inicial T0 es: {T0:.4f} °C")
+            elif choice == '3':
+                Tf = safe_input("Introduce la temperatura final (T(t)): ")
+                T0 = safe_input("Introduce la temperatura inicial (T0): ")
+                k = safe_input("Introduce la constante de enfriamiento (k): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                Ta = calcular_temperatura_ambiente(Tf, T0, k, t)
+                print(f"\n✅ Resultado: La temperatura ambiente Ta es: {Ta:.4f} °C")
+            elif choice == '4':
+                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
+                T0 = safe_input("Introduce la temperatura inicial (T0): ")
+                Tf = safe_input("Introduce la temperatura final (T(t)): ")
+                k = safe_input("Introduce la constante de enfriamiento (k): ")
+                t = calcular_tiempo_newton(Ta, T0, Tf, k)
+                print(f"\n✅ Resultado: El tiempo (t) transcurrido es: {t:.4f}")
+            elif choice == '5':
+                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
+                T0 = safe_input("Introduce la temperatura inicial (T0): ")
+                Tf = safe_input("Introduce la temperatura final (T(t)): ")
+                t = safe_input("Introduce el tiempo transcurrido (t): ")
+                k = calcular_constante_k_newton(Ta, T0, Tf, t)
+                print(f"\n✅ Resultado: La constante de enfriamiento (k) es: {k:.6f}")
+            elif choice == '6':
+                break
+            else:
+                print("Opción no válida. Por favor, elige una opción del 1 al 6.")
+
+        except (ValueError, ZeroDivisionError) as e:
+            print(f"❌ Error en el cálculo: {e}")
+            
+        print("-" * 50)
+
 
 def main():
-    """Función principal que muestra el menú."""
+    """Función principal que muestra el menú de selección de modelo."""
     while True:
-        print("\n--- Calculadora de Descomposición Radiactiva ---")
-        # Esta es la pregunta clave que pediste
-        print("¿Qué deseas hallar en el ejercicio?")
-        print("1. La cantidad final (N(t))")
-        print("2. La cantidad inicial (N0)")
-        print("3. El tiempo (t)")
-        print("4. La constante de desintegración (k) (con N0, N(t) y t)")
-        print("5. La Vida Media / Semivida (T_half) (a partir de k)")
-        print("6. La constante (k) (a partir de la Vida Media)")
-        print("7. Salir")
+        print("\n" + "=" * 50)
+        print("  CALCULADORA CIENTÍFICA: MODELOS EXPONENCIALES")
+        print("=" * 50)
+        print("Selecciona el modelo a simular:")
+        print(" 1. Decaimiento Radiactivo (N(t))")
+        print(" 2. Ley de Enfriamiento de Newton (T(t))")
+        print(" 3. Salir del Programa")
         
-        choice = input("Selecciona una opción (1-7): ")
+        choice = safe_input("Selecciona una opción (1-3): ", type=str)
+        print("-" * 50)
         
         if choice == '1':
-            calcular_cantidad_final()
+            menu_radiactiva()
         elif choice == '2':
-            calcular_cantidad_inicial()
+            menu_newton()
         elif choice == '3':
-            calcular_tiempo()
-        elif choice == '4':
-            calcular_constante_k()
-        elif choice == '5':
-            calcular_vida_media()
-        elif choice == '6':
-            convertir_vida_media_a_k()
-        elif choice == '7':
-            print("Adiós.")
-            break # Termina el bucle y sale del programa
+            print("Programa finalizado. ¡Adiós!")
+            sys.exit(0)
         else:
-            print("Opción no válida. Por favor, elige una opción del 1 al 7.")
-        
-        print("-" * 50) # Separador para la siguiente iteración
-
+            print("Opción no válida. Por favor, elige 1, 2 o 3.")
 
 if __name__ == "__main__":
     main()
