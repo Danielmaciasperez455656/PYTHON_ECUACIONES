@@ -1,12 +1,27 @@
-# Simulador de Modelos Exponenciales (Decaimiento Radiactivo y Ley de Enfriamiento de Newton)
-# Versión: FINAL Y LIMPIA (Funcionalidad 100% Garantizada con Input Manual)
+# app.py
+# Simulador de Modelos Exponenciales (Enfocado en Ley de Enfriamiento de Newton)
 # -------------------------------------------------------------------------------------
 
 import streamlit as st
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Optional, List
+import sys # Importar sys para st.stop() o manejo de errores si es necesario
+
+# --- IMPORTACIÓN CLAVE ---
+# Importamos las funciones de cálculo desde tu otro archivo
+try:
+    from Ley_Enfriamiento import (
+        calcular_temperatura_final,
+        calcular_temperatura_inicial,
+        calcular_temperatura_ambiente,
+        calcular_tiempo,
+        calcular_constante_k
+    )
+except ImportError:
+    st.error("Error Crítico: No se pudo encontrar el archivo 'Ley_Enfriamiento.py'. Asegúrate de que esté en la misma carpeta que 'app.py'.")
+    st.stop()
+
 
 # --- Constantes y Parámetros Globales ---
 COLOR_PRIMARIO = "#58A6FF"
@@ -15,15 +30,15 @@ COLOR_FONDO = "#0D1117"
 COLOR_SECUNDARIO = "#161B22"
 
 # ----------------------------------------------------------------
-# CONFIGURACIÓN GENERAL Y CSS (Máxima Expansión de Estilo)
+# CONFIGURACIÓN GENERAL Y CSS (Se mantiene tu estilo)
 # ----------------------------------------------------------------
 st.set_page_config(
-    page_title="Modelos Exponenciales", 
-    page_icon="🌌",
+    page_title="Ley de Enfriamiento", 
+    page_icon="🌡️",
     layout="wide"
 )
 
-# Estilos CSS detallados y extensos para asegurar la estética
+# Estilos CSS (Se mantienen tus estilos exactos)
 st.markdown(f"""
     <style>
     /* 1. Estilos Base y App Container */
@@ -112,39 +127,40 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------------------
-# FUNCIÓN DE CÁLCULO Y GRÁFICA 
+# FUNCIÓN DE CÁLCULO Y GRÁFICA (Simplificada para Newton)
 # ----------------------------------------------------------------
 
-def plot_model(t_max: float, values: List[float], xlabel: str, ylabel: str, title: str, T_ambiente: Optional[float] = None, T_inicial: Optional[float] = None):
-    """Genera y muestra la gráfica del modelo exponencial con estilo avanzado."""
-    if t_max <= 0:
-        st.error("El tiempo de predicción debe ser mayor que cero para generar la gráfica.")
+def plot_model(t_highlight: float, Tf_highlight: float, Ta: float, T0: float, k: float, xlabel: str, ylabel: str, title: str):
+    """
+    Genera la gráfica del modelo de Newton.
+    Destaca el punto (t_highlight, Tf_highlight) que fue calculado o usado como dato.
+    """
+    if k <= 0 or T0 == Ta:
+        st.warning("La gráfica no se puede generar con k=0 o T0=Ta.")
         return
 
-    tiempo = np.linspace(0, t_max * 1.2, 500) 
+    # Asegura que el tiempo de ploteo sea suficiente para ver el punto destacado
+    t_max_plot = t_highlight * 1.5 + 1.0 # Añade un 50% extra + 1 para margen
+    tiempo = np.linspace(0, t_max_plot, 500) 
 
-    if T_ambiente is not None:
-        if len(values) < 3: return
-        T0, Ta, k = values[0], values[1], values[2]
-        fig_values = T_ambiente + (T0 - T_ambiente) * np.exp(-k * tiempo)
-        line_color, point_color = COLOR_EXITO, COLOR_PRIMARIO
-    else:
-        if len(values) < 2: return
-        N0, k = values[0], values[1]
-        fig_values = N0 * np.exp(-k * tiempo)
-        line_color, point_color = COLOR_PRIMARIO, COLOR_EXITO
+    # Calcula la curva completa
+    fig_values = Ta + (T0 - Ta) * np.exp(-k * tiempo)
+    line_color, point_color = COLOR_EXITO, COLOR_PRIMARIO
 
     # Configuración de Matplotlib para el tema oscuro
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(10, 5.5), facecolor=COLOR_FONDO) 
-    ax.plot(tiempo, fig_values, color=line_color, linewidth=3.5, label="Función N(t) o T(t)")
+    ax.plot(tiempo, fig_values, color=line_color, linewidth=3.5, label=f"Función T(t) (k={k:.4f})")
     
-    final_val_at_t = fig_values[np.abs(tiempo - t_max).argmin()] 
-    ax.scatter(t_max, final_val_at_t, color=point_color, zorder=5, s=180, edgecolors='#C9D1D9', linewidths=2.5, label=f"Predicción en $t={t_max}$")
+    # Destaca el punto de interés (calculado o dato)
+    ax.scatter(t_highlight, Tf_highlight, color=point_color, zorder=5, s=180, edgecolors='#C9D1D9', linewidths=2.5, label=f"Punto de Interés (t={t_highlight:.2f}, T={Tf_highlight:.2f})")
     
-    ax.axvline(t_max, color=point_color, linestyle='--', alpha=0.5, linewidth=1)
-    ax.axhline(final_val_at_t, color=point_color, linestyle='--', alpha=0.5, linewidth=1)
+    ax.axvline(t_highlight, color=point_color, linestyle='--', alpha=0.5, linewidth=1)
+    ax.axhline(Tf_highlight, color=point_color, linestyle='--', alpha=0.5, linewidth=1)
     
+    # Línea de la Temperatura Ambiente
+    ax.axhline(Ta, color="#C9D1D9", linestyle=':', alpha=0.7, linewidth=2, label=f"Temp. Ambiente (Ta={Ta:.2f})")
+
     ax.set_xlabel(xlabel, color="#C9D1D9", fontsize=12)
     ax.set_ylabel(ylabel, color="#C9D1D9", fontsize=12)
     ax.set_title(title, color="#C9D1D9", fontsize=16)
@@ -153,129 +169,187 @@ def plot_model(t_max: float, values: List[float], xlabel: str, ylabel: str, titl
     ax.spines['bottom'].set_color('#30363D')
     ax.grid(color="#30363D", linestyle='--', alpha=0.6)
     ax.set_facecolor("#161B22") 
-    ax.legend(facecolor="#161B22", edgecolor="#161B22", labelcolor="#C9D1D9", loc='upper right')
+    ax.legend(facecolor="#161B22", edgecolor="#161B22", labelcolor="#C9D1D9", loc='best')
     
     st.pyplot(fig)
     plt.close(fig)
 
 # ----------------------------------------------------------------
-# CABECERA Y MENÚ PRINCIPAL (Flujo Vertical) - AJUSTADO
+# CABECERA Y MENÚ PRINCIPAL (Flujo Vertical) - MODIFICADO
 # ----------------------------------------------------------------
-st.title("Simulador de Modelos Exponenciales")
+st.title("🌡️ Calculadora: Ley de Enfriamiento de Newton")
 st.markdown("---")
 
-# --- AJUSTE DE ESPACIO PARA EL SELECTBOX (Centrado) ---
+# --- NUEVO MENÚ SELECTBOX ---
 # Usamos columnas para limitar el ancho efectivo y centrar el selectbox
 col_izq, col_centro, col_der = st.columns([1, 2, 1])
 
 with col_centro:
-    menu = st.selectbox("Selecciona el modelo de simulación:", [
-        "— Seleccionar Modelo —",
-        "Descomposición Radiactiva",
-        "Ley de Enfriamiento de Newton"
-    ], key="main_menu_select_centered")
+    variable_a_calcular = st.selectbox(
+        "**¿Qué variable deseas hallar?**", 
+        [
+            "— Seleccionar Variable —",
+            "Temperatura Final (T(t))",
+            "Temperatura Inicial (T0)",
+            "Temperatura Ambiente (Ta)",
+            "Constante de Enfriamiento (k)",
+            "Tiempo (t)"
+        ], 
+        key="main_menu_select_centered"
+    )
 
 st.markdown("---") 
 
-# ----------------------------------------------------------------
-# ☢️ DESCOMPOSICIÓN RADIACTIVA (CALCULADORA MANUAL)
-# ----------------------------------------------------------------
-if menu == "Descomposición Radiactiva":
-    st.header("Modelo de Descomposición Radiactiva")
-    st.markdown("Calcula la cantidad restante (N(t)) de una sustancia con desintegración exponencial. **Fórmula:** $N(t) = N_0 e^{-k t}$")
+# Contenedor para los inputs
+inputs_container = st.container(border=True)
 
-    with st.container(border=True): 
-        st.subheader("Parámetros del Modelo")
-        col1, col2, col3 = st.columns(3)
-        N0 = col1.number_input("Cantidad Inicial (N_0):", min_value=0.0, value=800.0, key="N0_manual", help="Masa o unidades al inicio (t=0).")
-        k = col2.number_input("Constante de Descomposición (k):", min_value=0.0001, value=0.015, format="%.4f", key="k_manual", help="Tasa de desintegración (k > 0).")
-        t = col3.number_input("Tiempo de Predicción (t):", min_value=0.0, value=50.0, key="t_manual", help="Tiempo transcurrido hasta el punto de cálculo.")
-
-        st.markdown("---")
-        submitted = st.button("Calcular Descomposición", key="btn_decay")
-
-    if submitted:
-        if N0 is None or k is None or t is None or k <= 0:
-            st.error("Por favor, ingrese valores válidos y positivos para N₀ y k.")
-            st.stop()
-
-        try:
-            exp_val = -k * t
-            decay_factor = math.exp(exp_val)
-            Nf = N0 * decay_factor
-
-            st.markdown(f'<div class="result-card"><h4>Cantidad Remanente N({t:.2f})</h4><div class="result-value">{Nf:.4f} unidades</div></div>', unsafe_allow_html=True)
-
-            st.markdown("### Proceso de Cálculo Detallado")
-            st.markdown("#### 1️⃣ Paso 1: Exponente")
-            st.latex(f"(-k \\cdot t) = (-({k:.4f}) \\cdot {t:.2f}) = {exp_val:.4f}") # CORRECCIÓN: Usar la variable 'k'
-            
-            st.markdown("#### 2️⃣ Paso 2: Factor de Decaimiento")
-            st.latex(f"e^{{{exp_val:.4f}}} \\approx {decay_factor:.6f}")
-
-            st.markdown("#### 3️⃣ Paso 3: Cálculo Final")
-            st.latex(f"N(t) = {N0:.2f} \\cdot {decay_factor:.6f} \\approx {Nf:.4f}")
-            
-            st.markdown("### Visualización de la Tendencia")
-            plot_model(t, [N0, k], "Tiempo (t)", "Cantidad Remanente N(t)", "Gráfica de la Descomposición Radiactiva")
-                
-        except Exception as e:
-            st.error(f"Error interno en el cálculo: {e}")
 
 # ----------------------------------------------------------------
-# 🌡️ LEY DE ENFRIAMIENTO (CALCULADORA MANUAL)
+# LÓGICA DE CÁLCULO CONDICIONAL (El nuevo núcleo de la app)
 # ----------------------------------------------------------------
-elif menu == "Ley de Enfriamiento de Newton":
-    st.header("Modelo: Ley de Enfriamiento de Newton")
-    st.markdown("Predice la temperatura (T(t)) de un objeto que se enfría en un ambiente constante. **Fórmula:** T(t) = T_a + (T_0 - T_a)e^{-k t}")
 
-    with st.container(border=True): 
-        st.subheader("Parámetros del Modelo")
+# CASO 1: CALCULAR TEMPERATURA FINAL (T(t))
+if variable_a_calcular == "Temperatura Final (T(t))":
+    with inputs_container:
+        st.subheader("Parámetros para hallar: T(t)")
+        st.markdown("Fórmula: $T(t) = T_a + (T_0 - T_a)e^{-k t}$")
         col1, col2, col3, col4 = st.columns(4)
-        Ta = col1.number_input("Temp. Ambiente (T_a):", value=25.0, key="Ta_manual", help="Temperatura constante del entorno (°C).")
-        T0 = col2.number_input("Temp. Inicial (T_0):", value=100.0, key="T0_manual", help="Temperatura del objeto al inicio (t=0).")
-        k = col3.number_input("Constante de Enfriamiento (k):", min_value=0.0001, value=0.1, format="%.4f", key="k_enf_manual", help="Tasa de intercambio térmico (k > 0).")
-        t = col4.number_input("Tiempo de Predicción (t):", min_value=0.0, value=10.0, key="t_enf_manual", help="Tiempo transcurrido (en la unidad de k).")
-
+        Ta = col1.number_input("Temp. Ambiente (T_a):", value=25.0, key="Ta_in")
+        T0 = col2.number_input("Temp. Inicial (T_0):", value=100.0, key="T0_in")
+        k = col3.number_input("Constante (k):", min_value=0.0001, value=0.1, format="%.4f", key="k_in")
+        t = col4.number_input("Tiempo (t):", min_value=0.0, value=10.0, key="t_in")
+        
         st.markdown("---")
-        submitted = st.button("Calcular Enfriamiento", key="btn_cool")
+        submitted = st.button("Calcular Temperatura Final", key="btn_calc_tf")
 
     if submitted:
-        if Ta is None or T0 is None or k is None or t is None or k <= 0:
-            st.error("Por favor, ingrese valores válidos y positivos para k.")
-            st.stop()
-
         try:
-            Tdiff = T0 - Ta
-            exp_val = -k * t
-            decay_factor = math.exp(exp_val)
-            Tf = Ta + Tdiff * decay_factor
-
-            st.markdown(f'<div class="result-card"><h4>Temperatura Final T({t:.2f})</h4><div class="result-value">{Tf:.2f} °C</div></div>', unsafe_allow_html=True)
-
-            st.markdown("### Proceso de Cálculo Detallado")
-            st.markdown("#### 1️⃣ Paso 1: Diferencia Inicial")
-            st.latex(f"\\Delta T_0 = T_0 - T_a = {T0:.2f} - {Ta:.2f} = {Tdiff:.2f} \\; \\text{{°C}}") 
-
-            st.markdown("#### 2️⃣ Paso 2: Exponente")
-            # --- LÍNEA CORREGIDA A CONTINUACIÓN ---
-            st.latex(f"(-k \\cdot t) = (-({k:.4f}) \\cdot {t:.2f}) = {exp_val:.4f}")
-            # --- FIN DE LÍNEA CORREGIDA ---
-
-            st.markdown('3. **Factor de Decaimiento:**')
-            st.latex(f"e^{{{exp_val:.4f}}} \\approx {decay_factor:.6f}")
+            # Llama a la función importada
+            Tf_calculada = calcular_temperatura_final(Ta, T0, k, t)
             
-            st.markdown('4. **Resultado Final:**')
-            st.latex(f"T(t) = {Ta:.2f} + {Tdiff:.2f} \\cdot {decay_factor:.6f} \\approx {Tf:.2f} \\; \\text{{°C}}") 
+            # Muestra la tarjeta de resultado
+            st.markdown(f'<div class="result-card"><h4>Temperatura Final T({t:.2f})</h4><div class="result-value">{Tf_calculada:.4f} °C</div></div>', unsafe_allow_html=True)
+            
+            # Muestra la gráfica
+            st.markdown("### Visualización de la Tendencia")
+            plot_model(t, Tf_calculada, Ta, T0, k, "Tiempo (t)", "Temperatura (°C)", "Gráfica del Enfriamiento")
+
+        except (ValueError, ZeroDivisionError) as e:
+            st.error(f"❌ Error en el cálculo: {e}")
+
+# CASO 2: CALCULAR TEMPERATURA INICIAL (T0)
+elif variable_a_calcular == "Temperatura Inicial (T0)":
+    with inputs_container:
+        st.subheader("Parámetros para hallar: T_0")
+        st.markdown("Fórmula: $T_0 = T_a + (T(t) - T_a)e^{k t}$")
+        col1, col2, col3, col4 = st.columns(4)
+        Ta = col1.number_input("Temp. Ambiente (T_a):", value=25.0, key="Ta_in")
+        Tf = col2.number_input("Temp. Final (T(t)):", value=50.0, key="Tf_in")
+        k = col3.number_input("Constante (k):", min_value=0.0001, value=0.1, format="%.4f", key="k_in")
+        t = col4.number_input("Tiempo (t):", min_value=0.0, value=10.0, key="t_in")
+
+        st.markdown("---")
+        submitted = st.button("Calcular Temperatura Inicial", key="btn_calc_t0")
+
+    if submitted:
+        try:
+            # Llama a la función importada
+            T0_calculada = calcular_temperatura_inicial(Ta, Tf, k, t)
+            
+            st.markdown(f'<div class="result-card"><h4>Temperatura Inicial T_0</h4><div class="result-value">{T0_calculada:.4f} °C</div></div>', unsafe_allow_html=True)
             
             st.markdown("### Visualización de la Tendencia")
-            plot_model(t, [T0, Ta, k], "Tiempo (t)", "Temperatura (°C)", "Gráfica del Enfriamiento de Newton", T_inicial=T0, T_ambiente=Ta)
-                
-        except Exception as e:
-            st.error(f"Error interno en el cálculo: {e}")
+            plot_model(t, Tf, Ta, T0_calculada, k, "Tiempo (t)", "Temperatura (°C)", "Gráfica del Enfriamiento (T0 Calculado)")
+
+        except (ValueError, ZeroDivisionError) as e:
+            st.error(f"❌ Error en el cálculo: {e}")
+
+# CASO 3: CALCULAR TEMPERATURA AMBIENTE (Ta)
+elif variable_a_calcular == "Temperatura Ambiente (Ta)":
+    with inputs_container:
+        st.subheader("Parámetros para hallar: T_a")
+        st.markdown("Fórmula: $T_a = (T(t) - T_0 e^{-k t}) / (1 - e^{-k t})$")
+        col1, col2, col3, col4 = st.columns(4)
+        Tf = col1.number_input("Temp. Final (T(t)):", value=50.0, key="Tf_in")
+        T0 = col2.number_input("Temp. Inicial (T_0):", value=100.0, key="T0_in")
+        k = col3.number_input("Constante (k):", min_value=0.0001, value=0.1, format="%.4f", key="k_in")
+        t = col4.number_input("Tiempo (t):", min_value=0.0, value=10.0, key="t_in")
+        
+        st.markdown("---")
+        submitted = st.button("Calcular Temperatura Ambiente", key="btn_calc_ta")
+
+    if submitted:
+        try:
+            # Llama a la función importada
+            Ta_calculada = calcular_temperatura_ambiente(Tf, T0, k, t)
+            
+            st.markdown(f'<div class="result-card"><h4>Temperatura Ambiente T_a</h4><div class="result-value">{Ta_calculada:.4f} °C</div></div>', unsafe_allow_html=True)
+            
+            st.markdown("### Visualización de la Tendencia")
+            plot_model(t, Tf, Ta_calculada, T0, k, "Tiempo (t)", "Temperatura (°C)", "Gráfica del Enfriamiento (Ta Calculada)")
+
+        except (ValueError, ZeroDivisionError) as e:
+            st.error(f"❌ Error en el cálculo: {e}")
+
+# CASO 4: CALCULAR CONSTANTE DE ENFRIAMIENTO (k)
+elif variable_a_calcular == "Constante de Enfriamiento (k)":
+    with inputs_container:
+        st.subheader("Parámetros para hallar: k")
+        st.markdown("Fórmula: $k = (-1/t) \cdot \ln((T(t) - T_a) / (T_0 - T_a))$")
+        col1, col2, col3, col4 = st.columns(4)
+        Ta = col1.number_input("Temp. Ambiente (T_a):", value=25.0, key="Ta_in")
+        T0 = col2.number_input("Temp. Inicial (T_0):", value=100.0, key="T0_in")
+        Tf = col3.number_input("Temp. Final (T(t)):", value=50.0, key="Tf_in")
+        t = col4.number_input("Tiempo (t):", min_value=0.0001, value=10.0, key="t_in")
+        
+        st.markdown("---")
+        submitted = st.button("Calcular Constante (k)", key="btn_calc_k")
+
+    if submitted:
+        try:
+            # Llama a la función importada
+            k_calculada = calcular_constante_k(Ta, T0, Tf, t)
+            
+            st.markdown(f'<div class="result-card"><h4>Constante de Enfriamiento (k)</h4><div class="result-value">{k_calculada:.6f}</div></div>', unsafe_allow_html=True)
+            
+            st.markdown("### Visualización de la Tendencia")
+            plot_model(t, Tf, Ta, T0, k_calculada, "Tiempo (t)", "Temperatura (°C)", "Gráfica del Enfriamiento (k Calculada)")
+
+        except (ValueError, ZeroDivisionError) as e:
+            st.error(f"❌ Error en el cálculo: {e}")
+
+# CASO 5: CALCULAR TIEMPO (t)
+elif variable_a_calcular == "Tiempo (t)":
+    with inputs_container:
+        st.subheader("Parámetros para hallar: t")
+        st.markdown("Fórmula: $t = (-1/k) \cdot \ln((T(t) - T_a) / (T_0 - T_a))$")
+        col1, col2, col3, col4 = st.columns(4)
+        Ta = col1.number_input("Temp. Ambiente (T_a):", value=25.0, key="Ta_in")
+        T0 = col2.number_input("Temp. Inicial (T_0):", value=100.0, key="T0_in")
+        Tf = col3.number_input("Temp. Final (T(t)):", value=50.0, key="Tf_in")
+        k = col4.number_input("Constante (k):", min_value=0.0001, value=0.1, format="%.4f", key="k_in")
+        
+        st.markdown("---")
+        submitted = st.button("Calcular Tiempo (t)", key="btn_calc_t")
+
+    if submitted:
+        try:
+            # Llama a la función importada
+            t_calculado = calcular_tiempo(Ta, T0, Tf, k)
+            
+            st.markdown(f'<div class="result-card"><h4>Tiempo Transcurrido (t)</h4><div class="result-value">{t_calculado:.4f}</div></div>', unsafe_allow_html=True)
+            
+            st.markdown("### Visualización de la Tendencia")
+            plot_model(t_calculado, Tf, Ta, T0, k, "Tiempo (t)", "Temperatura (°C)", "Gráfica del Enfriamiento (t Calculado)")
+
+        except (ValueError, ZeroDivisionError) as e:
+            st.error(f"❌ Error en el cálculo: {e}")
 
 # ----------------------------------------------------------------
 # MENSAJE INICIAL (Pantalla de Bienvenida)
 # ----------------------------------------------------------------
-elif menu == "— Seleccionar Modelo —":
-    st.info("Utiliza el menú superior para elegir el modelo que deseas simular. Este simulador te ayudará a entender las dinámicas de crecimiento y descomposición exponencial.")
+elif variable_a_calcular == "— Seleccionar Variable —":
+    st.info("Utiliza el menú superior para elegir la variable que deseas calcular. La aplicación te pedirá solo los datos necesarios.")
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Newtons_law_of_cooling.svg/600px-Newtons_law_of_cooling.svg.png",
+             caption="Gráfica de la Ley de Enfriamiento de Newton. La temperatura del objeto (T) se acerca asintóticamente a la temperatura ambiente (Ta).",
+             use_column_width=True)

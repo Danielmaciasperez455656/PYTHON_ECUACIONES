@@ -1,23 +1,17 @@
 import math
-import sys
 
 # --- Fórmulas de la Ley de Enfriamiento de Newton ---
 # T(t) = Ta + (T0 - Ta) * e^(-kt)
 # 
 # Donde:
 # T(t) = Temperatura final en el tiempo t
-# Ta   = Temperatura ambiente
-# T0   = Temperatura inicial del objeto
-# k    = Constante de enfriamiento/calentamiento
-# t    = Tiempo
+# Ta   = Temperatura ambiente
+# T0   = Temperatura inicial del objeto
+# k    = Constante de enfriamiento/calentamiento
+# t    = Tiempo
 
-def safe_input(prompt, type=float):
-    """Maneja la entrada de datos, forzando números y reintentando en caso de error."""
-    while True:
-        try:
-            return type(input(prompt))
-        except ValueError:
-            print("❌ Error de entrada. Por favor, introduce solo números válidos.")
+# --- SE ELIMINÓ safe_input() ---
+# (Esta función se moverá a app.py para ser el controlador principal)
 
 def calcular_temperatura_final(Ta, T0, k, t):
     """Calcula la Temperatura Final T(t)."""
@@ -57,67 +51,8 @@ def calcular_constante_k(Ta, T0, Tf, t):
     
     return (-1 / t) * math.log(ratio)
 
-def menu_newton():
-    """Función principal que muestra el menú."""
-    while True:
-        print("\n--- Calculadora de la Ley de Enfriamiento de Newton ---")
-        print("¿Qué deseas hallar en el ejercicio?")
-        print("1. La temperatura final (T(t))")
-        print("2. El tiempo (t)")
-        print("3. La constante de enfriamiento (k)")
-        print("4. La temperatura inicial (T0)")
-        print("5. La temperatura ambiente (Ta) [NUEVO]") # Opción añadida
-        print("6. Salir")
-        
-        choice = safe_input("Selecciona una opción (1-6): ", type=str)
-        print("-" * 50)
-        
-        try:
-            if choice == '1':
-                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
-                T0 = safe_input("Introduce la temperatura inicial (T0): ")
-                k = safe_input("Introduce la constante de enfriamiento (k): ")
-                t = safe_input("Introduce el tiempo transcurrido (t): ")
-                Tf = calcular_temperatura_final(Ta, T0, k, t)
-                print(f"\n✅ Resultado: La temperatura final T(t) es: {Tf:.4f} °C")
-            elif choice == '2':
-                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
-                T0 = safe_input("Introduce la temperatura inicial (T0): ")
-                Tf = safe_input("Introduce la temperatura final (T(t)): ")
-                k = safe_input("Introduce la constante de enfriamiento (k): ")
-                t = calcular_tiempo(Ta, T0, Tf, k)
-                print(f"\n✅ Resultado: El tiempo (t) transcurrido es: {t:.4f}")
-            elif choice == '3':
-                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
-                T0 = safe_input("Introduce la temperatura inicial (T0): ")
-                Tf = safe_input("Introduce la temperatura final (T(t)): ")
-                t = safe_input("Introduce el tiempo transcurrido (t): ")
-                k = calcular_constante_k(Ta, T0, Tf, t)
-                print(f"\n✅ Resultado: La constante de enfriamiento (k) es: {k:.4f}")
-            elif choice == '4':
-                Ta = safe_input("Introduce la temperatura ambiente (Ta): ")
-                Tf = safe_input("Introduce la temperatura final (T(t)): ")
-                k = safe_input("Introduce la constante de enfriamiento (k): ")
-                t = safe_input("Introduce el tiempo transcurrido (t): ")
-                T0 = calcular_temperatura_inicial(Ta, Tf, k, t)
-                print(f"\n✅ Resultado: La temperatura inicial T0 es: {T0:.4f} °C")
-            elif choice == '5': # <--- NUEVA OPCIÓN
-                Tf = safe_input("Introduce la temperatura final (T(t)): ")
-                T0 = safe_input("Introduce la temperatura inicial (T0): ")
-                k = safe_input("Introduce la constante de enfriamiento (k): ")
-                t = safe_input("Introduce el tiempo transcurrido (t): ")
-                Ta = calcular_temperatura_ambiente(Tf, T0, k, t)
-                print(f"\n✅ Resultado: La temperatura ambiente Ta es: {Ta:.4f} °C")
-            elif choice == '6':
-                print("Adiós.")
-                sys.exit(0)
-            else:
-                print("Opción no válida. Por favor, elige 1, 2, 3, 4, 5 o 6.")
-        
-        except (ValueError, ZeroDivisionError) as e:
-            print(f"❌ Error en el cálculo: {e}")
-            
-        print("-" * 50)
+# --- SE ELIMINÓ menu_newton() ---
+# (Esta lógica se moverá a app.py)
 
-if __name__ == "__main__":
-    menu_newton()
+# --- SE ELIMINÓ if __name__ == "__main__": ---
+# (app.py será el punto de entrada)
